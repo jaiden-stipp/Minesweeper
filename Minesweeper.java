@@ -69,4 +69,4 @@ public class Minesweeper {
             System.out.println();
         }
     }
-
+}
