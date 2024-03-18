@@ -1,72 +1,87 @@
-import java.util.Scanner;
+package Minesweeper;
+import java.awt.*;
+import java.util.*;
 
-public class Minesweeper {
-    private final int[][] board;
-    private final boolean[][] revealed;
-    private final int numRows;
-    private final int numCols;
-    private final int numMines;
 
-    public Minesweeper(int numRows, int numCols, int numMines) {
-        this.numRows = numRows;
-        this.numCols = numCols;
-        this.numMines = numMines;
-        this.board = new int[numRows][numCols];
-        this.revealed = new boolean[numRows][numCols];
-        initializeBoard();
-        placeMines();
-        calculateNumbers();
+public class minesweeper {
+    // Square Size and initilaizing variables 
+    static final int sqr = 8;
+    static int sideLength = 50;
+    static int originX = 50;
+    static int originY = 50;
+    static boolean[][] mineLocations = new boolean[sqr][sqr];
+    static boolean[][] cellStates = new boolean[sqr][sqr];
+    
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Welcome to Minesweeper!");
+        DrawingPanel draw = new DrawingPanel(500,500);
+        Graphics g = draw.getGraphics();
+        createBoard(draw, g);
+        
+        System.out.println("Enter coordinate on grid: ");
+    
+        distributeMines(10, g);
+
     }
 
-    private void initializeBoard() {
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                board[i][j] = 0;
-                revealed[i][j] = false;
-            }
+    public static void createBoard(DrawingPanel d, Graphics g) {
+        // Loop to draw horizontal grid lines
+        for(int i = 0; i < sqr+1; i++) {
+            /*  Draw a horizontal line starting from the left edge of the grid to the right edge.
+            The vertical position of the line  increases with each iteration, effectively drawing each horizontal line one "sideLength" apart. */
+            g.drawLine(originX, originY + i * sideLength, originX + sqr * sideLength, originY + i * sideLength);
+        }
+        for(int i = 0; i < sqr+1; i++) {
+            g.drawLine(originX + i * sideLength, originY, originX + i * sideLength, originY + sqr * sideLength);
         }
     }
-
-    private void placeMines() {
+    public static String checkCell(int x, int y, DrawingPanel d, Graphics g) {
+        int xCell = (x - originX) / sideLength;
+        int yCell = (y - originY) / sideLength;
+        return "("+ xCell + ", " + yCell + ")";
+    }
+    public static void distributeMines(int numberOfMines, Graphics g) {
+        Random rand = new Random();
         int minesPlaced = 0;
-        while (minesPlaced < numMines) {
-            int row = (int) (Math.random() * numRows);
-            int col = (int) (Math.random() * numCols);
-            if (board[row][col] != -1) {
-                board[row][col] = -1;
+
+        while (minesPlaced < numberOfMines) {
+            int row = rand.nextInt(sqr);
+            int col = rand.nextInt(sqr);
+            int x = originX + col * sideLength;
+            int y = originY + row * sideLength;
+
+            // Only place a mine if there isn't already one there
+            if (!mineLocations[row][col]) {
+                mineLocations[row][col] = true;
                 minesPlaced++;
+                g.setColor(Color.BLUE);
+                g.fillRect(x, y, sideLength, sideLength);
             }
         }
     }
-
-    private void calculateNumbers() {
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                if (board[i][j] != -1) {
-                    int count = 0;
-                    for (int ii = Math.max(0, i - 1); ii <= Math.min(numRows - 1, i + 1); ii++) {
-                        for (int jj = Math.max(0, j - 1); jj <= Math.min(numCols - 1, j + 1); jj++) {
-                            if (board[ii][jj] == -1) {
-                                count++;
-                            }
-                        }
-                    }
-                    board[i][j] = count;
-                }
-            }
+    public static boolean checkGuess(String cellId, )
+    public static void colorCell(String cellId, Graphics g, Color color) {
+        if (cellId.length() != 2) {
+            System.out.println("Invalid cell format");
+            return;
         }
-    }
 
-    public void printBoard(boolean showMines) {
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                if (revealed[i][j] || showMines && board[i][j] == -1) {
-                    System.out.print(board[i][j] == -1 ? "* " : board[i][j] + " ");
-                } else {
-                    System.out.print(". ");
-                }
-            }
-            System.out.println();
+        // Convert from letter/number to row/column
+        int col = cellId.charAt(0) - 'a'; // 'a' becomes 0, 'b' becomes 1, etc.
+        int row = Character.getNumericValue(cellId.charAt(1)) - 1; // '1' becomes 0, '2' becomes 1, etc.
+
+        if (row < 0 || row >= sqr || col < 0 || col >= sqr) {
+            System.out.println("Out of bounds");
+            return;
         }
+
+        // Calculate the top-left corner of the cell
+        int x = originX + col * sideLength;
+        int y = originY + row * sideLength;
+
+        // Color the cell
+        g.setColor(color);
+        g.fillRect(x, y, sideLength, sideLength);
     }
 }
